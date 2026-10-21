@@ -1,0 +1,17 @@
+# Java / Maven
+target/
+*.class
+*.log
+hs_err_pid*
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Front-end
+node_modules/
+dist/
+.env
+.env.local

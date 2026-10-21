@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fatec Login • Teste</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --admin: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1e293b, #0f172a 60%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 48px 16px;
+    }
+    .wrap { width: 100%; max-width: 420px; }
+    h1 { font-size: 22px; margin: 0 0 4px; text-align: center; }
+    .subtitle { color: var(--muted); text-align: center; margin: 0 0 28px; font-size: 14px; }
+
+    .session-timer {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--card-border);
+      transition: color .2s, background .2s, border-color .2s;
+    }
+    .session-timer.warning {
+      color: var(--admin);
+      background: rgba(245,158,11,0.1);
+      border-color: rgba(245,158,11,0.35);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .tab.active { background: rgba(99,102,241,0.15); color: var(--primary); border-color: rgba(99,102,241,0.4); }
+
+    label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 6px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+      color: var(--text);
+      font-size: 14px;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: var(--primary-hover); }
+    button.secondary { background: transparent; border: 1px solid var(--card-border); color: var(--text); }
+    button.secondary:hover { background: rgba(255,255,255,0.05); }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #dc2626; }
+    button.admin { background: var(--admin); }
+    button.admin:hover { background: #d97706; }
+
+    .msg { font-size: 13px; margin-top: 12px; padding: 10px 12px; border-radius: 8px; display: none; white-space: pre-wrap; }
+    .msg.error { display: block; background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+    .msg.ok { display: block; background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
+
+    .hidden { display: none !important; }
+
+    .userbox { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; flex-shrink: 0;
+    }
+    .userinfo .name { font-weight: 600; font-size: 15px; }
+    .userinfo .roles { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-right: 4px;
+      background: rgba(245,158,11,0.15); color: var(--admin); border: 1px solid rgba(245,158,11,0.35);
+    }
+    .badge.user { background: rgba(148,163,184,0.15); color: var(--muted); border-color: rgba(148,163,184,0.3); }
+
+    .row { display: flex; gap: 10px; }
+    .row button { margin-top: 16px; }
+
+    .admin-result {
+      margin-top: 14px; padding: 14px; border-radius: 10px; font-size: 13px;
+      border: 1px dashed var(--card-border);
+    }
+    .footer-note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 8px; }
+    code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Login</h1>
+
+
+  <!-- ===== Estado: deslogado ===== -->
+  <div id="authCard" class="card">
+    <div class="tabs">
+      <div class="tab active" data-tab="login">Entrar</div>
+      <div class="tab" data-tab="create">Criar conta</div>
+    </div>
+
+    <!-- Login -->
+    <form id="loginForm">
+      <label>Usuário</label>
+      <input type="text" id="loginUsername" required autocomplete="username" />
+      <label>Senha</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password" />
+      <button type="submit">Entrar</button>
+    </form>
+
+    <!-- Criar conta -->
+    <form id="createForm" class="hidden">
+      <label>Usuário</label>
+      <input type="text" id="createUsername" required />
+      <label>Senha</label>
+      <input type="password" id="createPassword" required />
+      <label>Email</label>
+      <input type="email" id="createEmail" required />
+      <label>CEP</label>
+      <input type="text" id="createCep" required />
+      <label>Perfil (role)</label>
+      <select id="createRole">
+        <option value="USER">USER</option>
+        <option value="ADMIN">ADMIN</option>
+      </select>
+      <button type="submit">Criar conta e entrar</button>
+    </form>
+
+    <div id="authMsg" class="msg"></div>
+  </div>
+
+  <!-- ===== Estado: logado ===== -->
+  <div id="sessionCard" class="card hidden">
+    <div class="userbox">
+      <div class="avatar" id="avatarInitial">?</div>
+      <div class="userinfo">
+        <div class="name" id="sessionUsername">-</div>
+        <div class="roles" id="sessionRoles">-</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="admin" id="btnAdmin">Testar área ADMIN</button>
+      <button class="danger" id="btnLogout">Sair</button>
+    </div>
+
+    <div id="adminResult" class="admin-result hidden"></div>
+  </div>
+
+  <div id="sessionTimer" class="session-timer">Sessão expira em 1:00 de inatividade</div>
+</div>
+
+<script>
+
+  // ---- Timeout por inatividade ----
+
+  // Se o usuário ficar esse tempo sem interagir (mouse/teclado/scroll/toque),
+  // fazemos logout automático (limpa o cookie) e voltamos pra tela de login.
+  const INACTIVITY_LIMIT_MS = 1 * 60 * 1000; // 1 minutos
+  const WARNING_AT_MS = 30 * 1000; // últimos 30s ficam com aviso em destaque
+  let inactivityTimer = null;
+  let countdownInterval = null;
+  let sessionExpiresAt = null;
+  let sessionActive = false;
+
+  const sessionTimerEl = document.getElementById("sessionTimer");
+
+  function formatMMSS(ms) {
+    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
+  function startInactivityWatch() {
+    sessionActive = true;
+    resetInactivityTimer();
+  }
+
+  function stopInactivityWatch() {
+    sessionActive = false;
+    clearTimeout(inactivityTimer);
+    clearInterval(countdownInterval);
+    sessionExpiresAt = null;
+  }
+
+  function resetInactivityTimer() {
+    if (!sessionActive) return;
+    clearTimeout(inactivityTimer);
+    clearInterval(countdownInterval);
+    sessionExpiresAt = Date.now() + INACTIVITY_LIMIT_MS;
+
+    countdownInterval = setInterval(() => {
+      const remaining = sessionExpiresAt - Date.now();
+      sessionTimerEl.textContent = `Sessão expira em ${formatMMSS(remaining)} de inatividade`;
+      sessionTimerEl.classList.toggle("warning", remaining <= WARNING_AT_MS);
+    }, 1000);
+
+    inactivityTimer = setTimeout(handleInactivityLogout, INACTIVITY_LIMIT_MS);
+  }
+
+  async function handleInactivityLogout() {
+    stopInactivityWatch();
+    try {
+      await fetch(`${API}/fatec/login/v1/logout`, { method: "POST", credentials: "same-origin" });
+    } finally {
+      renderLoggedOut();
+      showMsg("Sua sessão expirou por inatividade. Faça login novamente.", "error");
+    }
+  }
+
+  // Qualquer interação do usuário reinicia a contagem
+  ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"].forEach(evt => {
+    document.addEventListener(evt, () => resetInactivityTimer(), { passive: true });
+  });
+  const API = ""; // mesma origem (servido pelo Spring Boot)
+
+  const authCard = document.getElementById("authCard");
+  const sessionCard = document.getElementById("sessionCard");
+  const authMsg = document.getElementById("authMsg");
+
+  // ---- Tabs (Entrar / Criar conta) ----
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      const isLogin = tab.dataset.tab === "login";
+      document.getElementById("loginForm").classList.toggle("hidden", !isLogin);
+      document.getElementById("createForm").classList.toggle("hidden", isLogin);
+      clearMsg();
+    });
+  });
+
+  function showMsg(text, type) {
+    authMsg.textContent = text;
+    authMsg.className = "msg " + type;
+  }
+  function clearMsg() {
+    authMsg.className = "msg";
+    authMsg.textContent = "";
+  }
+
+  // ---- Renderiza a sessão logada com os claims (id, username, roles) ----
+  function renderSession(claims) {
+    authCard.classList.add("hidden");
+    sessionCard.classList.remove("hidden");
+    document.getElementById("avatarInitial").textContent = claims.username.charAt(0).toUpperCase();
+    document.getElementById("sessionUsername").textContent = claims.username;
+    document.getElementById("sessionRoles").innerHTML = claims.roles
+            .map(r => `<span class="badge ${r === "ADMIN" ? "" : "user"}">${r}</span>`).join(" ");
+    document.getElementById("adminResult").classList.add("hidden");
+    startInactivityWatch(); // liga o cronômetro de inatividade assim que a sessão fica ativa
+  }
+
+
+  function renderLoggedOut() {
+    sessionCard.classList.add("hidden");
+    authCard.classList.remove("hidden");
+    stopInactivityWatch(); // sem sessão ativa, não faz sentido continuar contando
+    sessionTimerEl.textContent = "Sessão expira em 1:00 de inatividade";
+    sessionTimerEl.classList.remove("warning");
+  }
+
+  // ---- Ao carregar a página, verifica se já existe sessão (cookie) ----
+  async function checkSession() {
+    try {
+      const res = await fetch(`${API}/fatec/login/v1/me`, { credentials: "same-origin" });
+      if (res.ok) {
+        renderSession(await res.json());
+      } else {
+        renderLoggedOut();
+      }
+    } catch (e) {
+      renderLoggedOut();
+    }
+  }
+
+  // ---- Login ----
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const body = {
+      username: document.getElementById("loginUsername").value,
+      password: document.getElementById("loginPassword").value
+    };
+    try {
+      const res = await fetch(`${API}/fatec/login/v1/auth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        showMsg(`Falha no login (HTTP ${res.status}). Confira usuário/senha.`, "error");
+        return;
+      }
+      renderSession(await res.json());
+    } catch (err) {
+      showMsg("Não foi possível falar com a API. Ela está rodando em localhost:8081?", "error");
+    }
+  });
+
+  // ---- Criar conta ----
+  document.getElementById("createForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMsg();
+    const body = {
+      username: document.getElementById("createUsername").value,
+      password: document.getElementById("createPassword").value,
+      email: document.getElementById("createEmail").value,
+      cep: document.getElementById("createCep").value,
+      roles: [document.getElementById("createRole").value]
+    };
+    try {
+      const res = await fetch(`${API}/fatec/login/v1/user/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        showMsg(`Falha ao criar conta (HTTP ${res.status}). Usuário já existe?`, "error");
+        return;
+      }
+      renderSession(await res.json());
+    } catch (err) {
+      showMsg("Não foi possível falar com a API. Ela está rodando em localhost:8081?", "error");
+    }
+  });
+
+  // ---- Testar rota só-ADMIN ----
+  document.getElementById("btnAdmin").addEventListener("click", async () => {
+    const box = document.getElementById("adminResult");
+    box.classList.remove("hidden");
+    box.textContent = "Consultando...";
+    try {
+      const res = await fetch(`${API}/fatec/login/v1/admin/ping`, { credentials: "same-origin" });
+      if (res.status === 403) {
+        box.style.color = "#fca5a5";
+        box.textContent = "🚫 Acesso negado (403) — sua conta não tem a role ADMIN.";
+      } else if (res.ok) {
+        box.style.color = "#86efac";
+        box.textContent = "✅ " + (await res.text());
+      } else {
+        box.style.color = "#fca5a5";
+        box.textContent = `Erro inesperado (HTTP ${res.status}).`;
+      }
+    } catch (err) {
+      box.style.color = "#fca5a5";
+      box.textContent = "Não foi possível falar com a API.";
+    }
+  });
+
+  // ---- Logout ----
+  document.getElementById("btnLogout").addEventListener("click", async () => {
+    try {
+      await fetch(`${API}/fatec/login/v1/logout`, { method: "POST", credentials: "same-origin" });
+    } finally {
+      renderLoggedOut();
+    }
+  });
+
+  checkSession();
+</script>
+</body>
+</html>

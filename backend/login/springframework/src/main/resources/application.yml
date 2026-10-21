@@ -1,0 +1,16 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: login
+  mongodb:
+    uri: mongodb://localhost:27017/fatec
+  data:
+    mongodb:
+      auto-index-creation: true
+app:
+  cookie:
+    # Em produção (HTTPS) troque para true. Em http://localhost o navegador
+    # descarta cookies "Secure", então deixamos false por padrão pra testes.
+    secure: false
+

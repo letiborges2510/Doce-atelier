@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: venda
+  datasource:
+    url: jdbc:h2:file:~/venda-db/db;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    ssl:
+      enabled: ${RABBITMQ_SSL:false}
+
+event:
+  venda:
+    queue: venda-events
+    exchange: venda-exchange
+
+# A API de vendas avança o status dos pedidos sozinha (tempos curtos, p/ demonstração):
+# PENDENTE -> CONFIRMADA -> SAIU_PARA_ENTREGA -> ENTREGUE
+pedido:
+  automatico:
+    ativo: true
+    intervalo-ms: 3000
+    tempo-por-status-segundos: 10
+
+service:
+  gestao:
+    url: http://localhost:8082
+
+server:
+  port: 8083
